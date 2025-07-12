@@ -18,7 +18,7 @@ jobs:
 
       - name: Generate list.json
         run: |
-          ls *.txt *.md 2>/dev/null | jq -R . | jq -s . > list.json
+          ls * | awk '{if($0 ~ /\.[^.]+$/){print $0} else {print $0".txt"}}' | grep -E '\.txt$|\.md$' | jq -R . | jq -s . > list.json
 
       - name: Commit and push if changed
         if: "!contains(github.event.head_commit.modified, '.github/workflows/update-list.yml')" # 워크플로 파일 수정시 push 금지
