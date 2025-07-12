@@ -21,6 +21,7 @@ jobs:
           ls info/*.txt info/*.md 2>/dev/null | sed 's|info/||' | jq -R . | jq -s . > info/list.json
 
       - name: Commit and push if changed
+        if: "!contains(github.event.head_commit.modified, '.github/workflows/update-list.yml')" # 워크플로 파일 수정시 push 금지
         run: |
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
