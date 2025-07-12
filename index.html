@@ -134,7 +134,10 @@
 
       if (allFiles.length === 0) {
         let files = await fetchFileList();
-        files = files.filter(f => f.endsWith('.txt') || f.endsWith('.md'));
+        files = files.filter(f =>
+          (f.endsWith('.txt') || f.endsWith('.md')) &&
+          f.toLowerCase() !== 'readme.md'
+        );
         files = files.sort((a, b) => a.localeCompare(b, 'ko'));
         allFiles = files;
       }
