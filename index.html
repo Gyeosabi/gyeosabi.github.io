@@ -20,7 +20,7 @@
   <script>
     // info 폴더 내 파일 목록을 list.json에서 불러옴
     async function fetchFileList() {
-      const res = await fetch('info/list.json');
+      const res = await fetch('info/list.json?t=' + Date.now());
       if (!res.ok) return [];
       return res.json();
     }
