@@ -124,7 +124,7 @@
         return;
       }
       listDiv.innerHTML = '<ul>' +
-        files.map(f => `<li><a onclick="showDetail('${encodeURIComponent(f)}')"><b>${f.replace(/\.txt$/,'')}</b></a></li>`).join('') +
+        files.map(f => `<li><a onclick="showDetail('${encodeURIComponent(f)}')"><b>${f.replace(/\.(txt|md)$/,'')}</b></a></li>`).join('') +
         '</ul>';
     }
 
@@ -137,6 +137,8 @@
 
       if (allFiles.length === 0) {
         let files = await fetchFileList();
+        // txt, md 파일만 필터링
+        files = files.filter(f => f.endsWith('.txt') || f.endsWith('.md'));
         files = files.sort((a, b) => a.localeCompare(b, 'ko'));
         allFiles = files;
       }
@@ -144,7 +146,7 @@
     }
 
     async function showDetail(filename) {
-      const fileTitle = decodeURIComponent(filename).replace(/\.txt$/,'');
+      const fileTitle = decodeURIComponent(filename).replace(/\.(txt|md)$/,'');
       document.getElementById('main-title').textContent = fileTitle;
       document.getElementById('list').style.display = 'none';
       document.getElementById('search').style.display = 'none';
@@ -152,8 +154,14 @@
       document.getElementById('back').style.display = 'block';
 
       const content = await fetchFileContent(decodeURIComponent(filename));
-      document.getElementById('detail').innerHTML =
-        `<pre>${content}</pre>`;
+      // md 파일이면 <pre> 대신 <div>로 보여주기 (간단하게)
+      if (filename.endsWith('.md')) {
+        document.getElementById('detail').innerHTML =
+          `<div style="background:#f5f5f5; color:#222; padding:1em; border-radius:8px; font-size:0.6em; margin-bottom:2em; white-space:pre-wrap; word-break:break-word;">${content}</div>`;
+      } else {
+        document.getElementById('detail').innerHTML =
+          `<pre>${content}</pre>`;
+      }
     }
 
     document.getElementById('back').onclick = showList;
