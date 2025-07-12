@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>MedInfo 리스트</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 2em; }
+    ul { list-style: none; padding: 0; }
+    li { margin: 0.5em 0; }
+    a { cursor: pointer; color: blue; text-decoration: underline; }
+    #back { margin-bottom: 1em; display: none; cursor: pointer; color: green; }
+    pre { background: #f4f4f4; padding: 1em; }
+  </style>
+</head>
+<body>
+  <h1>MedInfo 리스트</h1>
+  <div id="back">← 목록으로</div>
+  <div id="list"></div>
+  <div id="detail" style="display:none;"></div>
+  <script>
+    // info 폴더 내 파일 목록을 list.json에서 불러옴
+    async function fetchFileList() {
+      const res = await fetch('info/list.json');
+      if (!res.ok) return [];
+      return res.json();
+    }
+
+    // 파일 내용 불러오기
+    async function fetchFileContent(filename) {
+      const res = await fetch(`info/${filename}`);
+      if (!res.ok) return "파일을 불러올 수 없습니다.";
+      return res.text();
+    }
+
+    // 리스트 페이지 렌더링
+    async function showList() {
+      document.getElementById('detail').style.display = 'none';
+      document.getElementById('list').style.display = 'block';
+      document.getElementById('back').style.display = 'none';
+
+      const files = await fetchFileList();
+      const listDiv = document.getElementById('list');
+      listDiv.innerHTML = '<ul>' +
+        files.map(f => `<li><a onclick="showDetail('${f}')">${f}</a></li>`).join('') +
+        '</ul>';
+    }
+
+    // 상세 페이지 렌더링
+    async function showDetail(filename) {
+      document.getElementById('list').style.display = 'none';
+      document.getElementById('detail').style.display = 'block';
+      document.getElementById('back').style.display = 'block';
+
+      const content = await fetchFileContent(filename);
+      document.getElementById('detail').innerHTML =
+        `<h2>${filename}</h2><pre>${content}</pre>`;
+    }
+
+    document.getElementById('back').onclick = showList;
+    window.showDetail = showDetail;
+
+    // 첫 진입 시 리스트 보여주기
+    showList();
+  </script>
+</body>
+</html>
