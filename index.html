@@ -2,64 +2,170 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
-  <title>MedInfo 리스트</title>
+  <title> </title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
-    body { font-family: Arial, sans-serif; margin: 2em; }
-    ul { list-style: none; padding: 0; }
-    li { margin: 0.5em 0; }
-    a { cursor: pointer; color: blue; text-decoration: underline; }
-    #back { margin-bottom: 1em; display: none; cursor: pointer; color: green; }
-    pre { background: #f4f4f4; padding: 1em; }
+    body { font-family: Arial, sans-serif; margin: 2em; background: #f9f9f9; color: #222; }
+    .container { max-width: 800px; margin: 0 auto; padding: 0 1em; }
+    h1 { text-align: center; font-size: 2em; }
+    #search { display: block; margin: 1.5em auto 1em auto; padding: 0.7em 1em; width: 100%; font-size: 1em; border: 1px solid #bbb; border-radius: 8px; background: #fff; color: #222; box-sizing: border-box; }
+    ul { list-style: none; padding: 0; margin: 0; }
+    li { margin: 0.7em 0; }
+    a {
+      display: block;
+      background: #fff;
+      color: #1976d2;
+      text-decoration: none;
+      padding: 1.1em 1em;
+      border-radius: 12px;
+      font-size: 1em;
+      font-weight: bold; /* 파일 제목 볼드 */
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      transition: background 0.2s, color 0.2s;
+      border: 1px solid #e0e0e0;
+    }
+    a:active, a:hover { background: #e3f2fd; color: #0d47a1; }
+    #back {
+      margin: 2em auto 0 auto;
+      display: none;
+      cursor: pointer;
+      color: #388e3c;
+      background: #e8f5e9;
+      border: none;
+      border-radius: 8px;
+      padding: 1em 0;
+      width: 100%;
+      max-width: 400px;
+      font-size: 1em;
+      font-weight: bold;
+      text-align: center;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    }
+    pre {
+      background: #f5f5f5;
+      color: #222;
+      padding: 1em;
+      border-radius: 8px;
+      overflow-x: auto;
+      font-size: 2.2em; /* txt 내용만 크게 */
+      margin-bottom: 2em;
+    }
+
+    /* PC (1025px 이상) */
+    @media (min-width: 1025px) {
+      body { max-width: 800px; margin: 3em auto; font-size: 1.1em; }
+      h1 { font-size: 4.4em; }
+      #list ul {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 2em;
+      }
+      #list li {
+        flex: 1 1 calc(50% - 2em);
+        max-width: calc(50% - 2em);
+        margin: 0;
+      }
+      #detail pre { font-size: 2.2em; }
+      #back { max-width: 400px; }
+    }
+
+    /* 태블릿 (768px ~ 1024px) */
+    @media (min-width: 768px) and (max-width: 1024px) {
+      body { max-width: 95vw; margin: 2em auto; font-size: 1em; }
+      h1 { font-size: 3.4em; }
+      #list ul { display: block; }
+      #list li { max-width: 100%; }
+      #detail pre { font-size: 2em; }
+      #back { max-width: 400px; }
+    }
+
+    /* 모바일 (767px 이하) */
+    @media (max-width: 767px) {
+      body { margin: 1em; font-size: 0.98em; }
+      h1 { font-size: 2.4em; }
+      #list ul { display: block; }
+      #list li { max-width: 100%; }
+      #detail pre { font-size: 1.5em; }
+      #back { font-size: 1.1em; }
+      a { font-size: 1em; }
+      #back { max-width: 100%; }
+    }
   </style>
 </head>
 <body>
-  <h1>MedInfo 리스트</h1>
-  <div id="back">← 목록으로</div>
-  <div id="list"></div>
-  <div id="detail" style="display:none;"></div>
+  <div class="container">
+    <h1 id="main-title">LOADING</h1>
+    <input id="search" type="text" placeholder="검색어를 입력하세요..." autocomplete="off">
+    <div id="list"></div>
+    <div id="detail" style="display:none;"></div>
+    <button id="back">← 목록으로</button>
+  </div>
   <script>
-    // info 폴더 내 파일 목록을 list.json에서 불러옴
+    let allFiles = [];
+
     async function fetchFileList() {
       const res = await fetch('info/list.json?t=' + Date.now());
       if (!res.ok) return [];
       return res.json();
     }
 
-    // 파일 내용 불러오기
     async function fetchFileContent(filename) {
       const res = await fetch(`info/${filename}`);
       if (!res.ok) return "파일을 불러올 수 없습니다.";
       return res.text();
     }
 
-    // 리스트 페이지 렌더링
-    async function showList() {
-      document.getElementById('detail').style.display = 'none';
-      document.getElementById('list').style.display = 'block';
-      document.getElementById('back').style.display = 'none';
-
-      const files = await fetchFileList();
+    function renderList(files) {
       const listDiv = document.getElementById('list');
+      if (files.length === 0) {
+        listDiv.innerHTML = '<div style="text-align:center; color:#aaa; margin-top:2em;">검색 결과가 없습니다.</div>';
+        return;
+      }
       listDiv.innerHTML = '<ul>' +
-        files.map(f => `<li><a onclick="showDetail('${encodeURIComponent(f)}')">${f}</a></li>`).join('') +
+        files.map(f => `<li><a onclick="showDetail('${encodeURIComponent(f)}')"><b>${f.replace(/\.txt$/,'')}</b></a></li>`).join('') +
         '</ul>';
     }
 
-    // 상세 페이지 렌더링
+    async function showList() {
+      document.getElementById('main-title').textContent = "항목을 선택해주세요.";
+      document.getElementById('detail').style.display = 'none';
+      document.getElementById('list').style.display = 'block';
+      document.getElementById('search').style.display = 'block';
+      document.getElementById('back').style.display = 'none';
+
+      if (allFiles.length === 0) {
+        let files = await fetchFileList();
+        files = files.sort((a, b) => a.localeCompare(b, 'ko'));
+        allFiles = files;
+      }
+      renderList(allFiles);
+    }
+
     async function showDetail(filename) {
+      const fileTitle = decodeURIComponent(filename).replace(/\.txt$/,'');
+      document.getElementById('main-title').textContent = fileTitle;
       document.getElementById('list').style.display = 'none';
+      document.getElementById('search').style.display = 'none';
       document.getElementById('detail').style.display = 'block';
       document.getElementById('back').style.display = 'block';
 
       const content = await fetchFileContent(decodeURIComponent(filename));
       document.getElementById('detail').innerHTML =
-        `<h2>${filename}</h2><pre>${content}</pre>`;
+        `<pre>${content}</pre>`;
     }
 
     document.getElementById('back').onclick = showList;
-    window.showDetail = showDetail;
 
-    // 첫 진입 시 리스트 보여주기
+    // 검색 기능
+    document.getElementById('search').addEventListener('input', function() {
+      const keyword = this.value.trim().toLowerCase();
+      const filtered = allFiles.filter(f =>
+        f.replace(/\.txt$/,'').toLowerCase().includes(keyword)
+      );
+      renderList(filtered);
+    });
+
+    window.showDetail = showDetail;
     showList();
   </script>
 </body>
