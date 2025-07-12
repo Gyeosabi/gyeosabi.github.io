@@ -41,7 +41,7 @@
       const files = await fetchFileList();
       const listDiv = document.getElementById('list');
       listDiv.innerHTML = '<ul>' +
-        files.map(f => `<li><a onclick="showDetail('${f}')">${f}</a></li>`).join('') +
+        files.map(f => `<li><a onclick="showDetail('${encodeURIComponent(f)}')">${f}</a></li>`).join('') +
         '</ul>';
     }
 
@@ -51,7 +51,7 @@
       document.getElementById('detail').style.display = 'block';
       document.getElementById('back').style.display = 'block';
 
-      const content = await fetchFileContent(filename);
+      const content = await fetchFileContent(decodeURIComponent(filename));
       document.getElementById('detail').innerHTML =
         `<h2>${filename}</h2><pre>${content}</pre>`;
     }
