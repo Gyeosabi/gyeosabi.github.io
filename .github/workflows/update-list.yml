@@ -4,6 +4,7 @@ on:
   push:
     paths:
       - 'info/*.txt'
+      - 'info/*.md'
       - '.github/workflows/update-list.yml'
 
 jobs:
@@ -17,7 +18,7 @@ jobs:
 
       - name: Generate info/list.json
         run: |
-          ls info/*.txt | sed 's|info/||' | jq -R . | jq -s . > info/list.json
+          ls info/*.txt info/*.md 2>/dev/null | sed 's|info/||' | jq -R . | jq -s . > info/list.json
 
       - name: Commit and push if changed
         run: |
