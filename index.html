@@ -19,7 +19,7 @@
       padding: 1.1em 1em;
       border-radius: 12px;
       font-size: 1em;
-      font-weight: bold; /* 파일 제목 볼드 */
+      font-weight: bold;
       box-shadow: 0 2px 8px rgba(0,0,0,0.08);
       transition: background 0.2s, color 0.2s;
       border: 1px solid #e0e0e0;
@@ -47,13 +47,12 @@
       padding: 1em;
       border-radius: 8px;
       overflow-x: auto;
-      font-size: 0.6em; /* txt 내용 0.6배로 */
+      font-size: 0.6em;
       margin-bottom: 2em;
-      white-space: pre-wrap; /* 자동 줄바꿈 추가 */
-      word-break: break-word; /* 긴 단어도 줄바꿈 */
+      white-space: pre-wrap;
+      word-break: break-word;
     }
 
-    /* PC (1025px 이상) */
     @media (min-width: 1025px) {
       body { max-width: 800px; margin: 3em auto; font-size: 1.1em; }
       h1 { font-size: 4.4em; }
@@ -71,7 +70,6 @@
       #back { max-width: 400px; }
     }
 
-    /* 태블릿 (768px ~ 1024px) */
     @media (min-width: 768px) and (max-width: 1024px) {
       body { max-width: 95vw; margin: 2em auto; font-size: 1em; }
       h1 { font-size: 3.4em; }
@@ -81,7 +79,6 @@
       #back { max-width: 400px; }
     }
 
-    /* 모바일 (767px 이하) */
     @media (max-width: 767px) {
       body { margin: 1em; font-size: 0.98em; }
       h1 { font-size: 2.4em; }
@@ -106,13 +103,13 @@
     let allFiles = [];
 
     async function fetchFileList() {
-      const res = await fetch('info/list.json?t=' + Date.now());
+      const res = await fetch('list.json?t=' + Date.now()); // info/ 제거
       if (!res.ok) return [];
       return res.json();
     }
 
     async function fetchFileContent(filename) {
-      const res = await fetch(`info/${filename}`);
+      const res = await fetch(filename); // info/ 제거
       if (!res.ok) return "파일을 불러올 수 없습니다.";
       return res.text();
     }
@@ -137,7 +134,6 @@
 
       if (allFiles.length === 0) {
         let files = await fetchFileList();
-        // txt, md 파일만 필터링
         files = files.filter(f => f.endsWith('.txt') || f.endsWith('.md'));
         files = files.sort((a, b) => a.localeCompare(b, 'ko'));
         allFiles = files;
@@ -154,10 +150,9 @@
       document.getElementById('back').style.display = 'block';
 
       const content = await fetchFileContent(decodeURIComponent(filename));
-      // md 파일이면 <pre> 대신 <div>로 보여주기 (간단하게)
       if (filename.endsWith('.md')) {
         document.getElementById('detail').innerHTML =
-          `<div style="background:#f5f5f5; color:#222; padding:1em; border-radius:8px; font-size:0.6em; margin-bottom:2em; white-space:pre-wrap; word-break:break-word;">${content}</div>`;
+          `<pre>${content}</pre>`;
       } else {
         document.getElementById('detail').innerHTML =
           `<pre>${content}</pre>`;
@@ -166,7 +161,6 @@
 
     document.getElementById('back').onclick = showList;
 
-    // 검색 기능
     document.getElementById('search').addEventListener('input', function() {
       const keyword = this.value.trim().toLowerCase();
       const filtered = allFiles.filter(f =>
